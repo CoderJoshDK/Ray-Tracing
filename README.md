@@ -11,7 +11,6 @@
 Output is in .ppm format. Right now, to get an output image, run `./InOneWeekend > image.ppm`
 
 ### To-Do
- - Metal
  - Refraction
  - Blur  
 Eventually, will add things like volumes.
