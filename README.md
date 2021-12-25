@@ -5,14 +5,22 @@
    - Sphere
  - Materials:  
    - Diffuse
+   - Metal
+   - Dielectrics
  - Camera
+   - Orientation
+   - Defocus blur (depth of field)
  
 ## Output
 Output is in .ppm format. Right now, to get an output image, run `./InOneWeekend > image.ppm`
 
 ### To-Do
- - Refraction
- - Blur  
+ - BVH
+ - Motion Blur 
+ - Textures
+ - Rectangles
+ - Lights
+ - Volumes 
 Eventually, will add things like volumes.
 
 ----------
