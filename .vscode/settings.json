@@ -3,6 +3,7 @@
         "iostream": "cpp",
         "chrono": "cpp",
         "cmath": "cpp",
-        "memory": "cpp"
+        "memory": "cpp",
+        "new": "cpp"
     }
 }

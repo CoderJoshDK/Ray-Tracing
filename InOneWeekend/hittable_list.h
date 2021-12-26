@@ -16,12 +16,12 @@ class hittable_list : public hittable{
         void clear(){objects.clear();}
         void add(shared_ptr<hittable> object) {objects.push_back(object);}
 
-        virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec) const override;
+        virtual bool hit(const ray& r, float t_min, float t_max, hit_record& rec) const override;
 
         std::vector< shared_ptr<hittable> > objects;
 };
 
-bool hittable_list::hit(const ray& r, double t_min, double t_max, hit_record& rec) const{
+bool hittable_list::hit(const ray& r, float t_min, float t_max, hit_record& rec) const{
     hit_record temp_rec;
     bool hit_anything = false;
     auto closest_so_far = t_max;

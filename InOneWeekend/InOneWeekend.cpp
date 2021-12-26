@@ -10,6 +10,7 @@
 #include <iostream>
 #include <chrono>
 #include <future>
+#include <fstream>
 
 color ray_color(const ray& r, const hittable& world, int depth){
     hit_record rec;
@@ -17,7 +18,7 @@ color ray_color(const ray& r, const hittable& world, int depth){
     if (depth <= 0)
         return color(0,0,0);
 
-    if (world.hit(r, 0.001, infinity, rec)){
+    if (world.hit(r, 0.001, MAXFLOAT, rec)){
         ray scattered;
         color attenuation;
         if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))
@@ -31,18 +32,22 @@ color ray_color(const ray& r, const hittable& world, int depth){
     return (1.0-t)*color(1.0,1.0,1.0) + t*color(.5,.7,1.0);
 }
 
-color get_ray_color(
-        const int image_width, 
-        const int image_height, 
-        const camera& cam, 
-        const hittable_list& world, 
-        const int max_depth,
-        int i, int j
-    ){
-    auto u = (i + random_double()) / (image_width - 1);
-    auto v = (j + random_double()) / (image_height - 1);
-    ray r = cam.get_ray(u, v);
-    return ray_color(r, world, max_depth);
+hittable_list simple_scene(){
+    hittable_list world;
+
+    auto ground_material = make_shared<lambertain>(color(0.5,0.5,0.5));
+    world.add(make_shared<sphere>(point3(0, -500, 0), 500, ground_material));
+
+    auto material1 = make_shared<dielectric>(1.5);
+    world.add(make_shared<sphere>(point3(0, 1, 0), 1.0, material1));
+
+    auto material2 = make_shared<lambertain>(color(0.1, 0.2, 0.5));
+    world.add(make_shared<sphere>(point3(-4, 1, 0), 1.0, material2));
+
+    auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
+    world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
+
+    return world;
 }
 
 hittable_list random_scene(){
@@ -91,6 +96,11 @@ hittable_list random_scene(){
     return world;
 }
 
+struct RayResult{
+    unsigned int index;
+    color col;
+};
+
 int main(int argc, char const *argv[])
 {
     // Time how long it takes
@@ -103,8 +113,14 @@ int main(int argc, char const *argv[])
     const int samples_per_pixel = 500;
     const int max_depth = 50;
 
+    color* image = new color[image_width * image_width];
+    memset(&image[0], 0, image_width * image_height * sizeof(color));
+    
+    std::ofstream imageFile;
+
     // World
     auto world = random_scene();
+    //auto world = simple_scene();
     
     // Camera
     point3 lookfrom(13,2,3);
@@ -117,28 +133,73 @@ int main(int argc, char const *argv[])
 
     // Render
 
-    std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
-    for (int j = image_height - 1; j >= 0; j--){
-        std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
+    std::mutex mutex;
+    std::condition_variable cvResults;
+    std::vector<std::future<RayResult>> m_futures;
+
+    //for (int j = image_height - 1; j >= 0; j--){
+    for (int j = 0; j < image_height; j++){
+        std::cerr << "\rScanlines remaining: " << image_height - j - 1 << ' ' << std::flush;
         for (int i = 0; i < image_width; i++){
-            color pixel_color(0,0,0);
-            std::vector<std::future<color>> colors;
+            // Each pixel will be dealt with by a thread
+            auto future = std::async(std::launch::async | std::launch::deferred,
+                [&cam, &world, &samples_per_pixel, i, j, image_width, image_height, &cvResults]() -> RayResult{
+                const unsigned int index = j * image_width + i;
+                color pixel_color(0, 0, 0);
+                for (int s = 0; s < samples_per_pixel; s++){
+                    auto u = (i + random_double()) / (image_width - 1);
+                    auto v = (j + random_double()) / (image_height - 1);
+                    ray r = cam.get_ray(u, v);
+                    pixel_color += ray_color(r, world, max_depth);
+                }
+                pixel_color /= float(samples_per_pixel);
 
-            for (int s = 0; s < samples_per_pixel; s++){
-                colors.push_back(std::async(&get_ray_color, image_width , image_height, cam, world, max_depth, i, j));
-                //pixel_color += get_ray_color(image_width , image_height, cam, world, max_depth, i, j);
+                RayResult result;
+                result.index = index;
+                result.col = color(
+                    clamp(sqrt(pixel_color.r()), 0.0, 0.999), 
+                    clamp(sqrt(pixel_color.g()), 0.0, 0.999), 
+                    clamp(sqrt(pixel_color.b()), 0.0, 0.999));
+                return result;
+            });
+            
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                m_futures.push_back(std::move(future));
             }
-            for (auto & c : colors)
-                pixel_color += c.get();
-            write_color(std::cout, pixel_color, samples_per_pixel);
         }
     }
+
+    auto timeout = std::chrono::milliseconds(10);
+    
+    const int pixelcount = image_width * image_height;
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+        cvResults.wait(lock, [&m_futures, &pixelcount]{
+            return m_futures.size() == pixelcount;
+        });
+    }
+
+    //Make image
+    for (auto& rr : m_futures){
+        RayResult result = rr.get();
+        image[result.index] = result.col;
+    }
+    
+    imageFile.open("image.ppm");
+    imageFile << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+    for (auto i = pixelcount-1; i >= 0; i--){
+        out_color(imageFile, image[i]);
+    }
+
+    imageFile.close();
     
     auto end = std::chrono::steady_clock::now();
     std::cerr << "\nDone in : " 
     << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()/1000.0 
     << " seconds\n";
 
+    delete [] image;
     return 0;
 }

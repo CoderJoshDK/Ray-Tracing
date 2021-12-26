@@ -5,6 +5,17 @@
 
 #include<iostream>
 
+void out_color(std::ostream &out, color pixel_color){
+    auto r = pixel_color.r();
+    auto g = pixel_color.g();
+    auto b = pixel_color.b();
+
+    // Write translated [0,255] value of color compenents.
+    out << static_cast<int>(256 * r) << ' '
+        << static_cast<int>(256 * g) << ' '
+        << static_cast<int>(256 * b) << '\n';
+}
+
 void write_color(std::ostream &out, color pixel_color, int samples_per_pixel){
     auto r = pixel_color.x();
     auto g = pixel_color.y();

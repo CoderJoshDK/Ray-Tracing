@@ -32,7 +32,7 @@ class camera{
             
             return ray(
                 origin + offset, 
-                lower_left_corner + s*horizontal + t*vertical - origin
+                lower_left_corner + s*horizontal + t*vertical - origin - offset
                 );
         }
 

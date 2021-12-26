@@ -12,7 +12,7 @@
    - Defocus blur (depth of field)
  
 ## Output
-Output is in .ppm format. Right now, to get an output image, run `./InOneWeekend > image.ppm`
+Output is in .ppm format. Right now, to get an output image, run build and run. The exe will output `image.ppm`
 
 ### To-Do
  - BVH
