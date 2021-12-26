@@ -4,6 +4,7 @@
         "chrono": "cpp",
         "cmath": "cpp",
         "memory": "cpp",
-        "new": "cpp"
+        "new": "cpp",
+        "locale": "cpp"
     }
 }
