@@ -3,6 +3,8 @@
 
 #include "hittable_list.h"
 #include "material.h"
+#include "bvh.h"
+#include "sphere.h"
 
 hittable_list simple_scene(){
     hittable_list world;
@@ -35,8 +37,16 @@ hittable_list random_scene(){
 
             if ((center - point3(4, 0.2, 0)).length() > 0.9){
                 shared_ptr<material> sphere_material;
-
-                if (choose_mat < 0.8){
+ 
+                if (choose_mat < 0.5){
+                    // Diffuse on a moving sphere
+                    auto albedo = color::random() * color::random();
+                    sphere_material = make_shared<lambertain>(albedo);
+                    // Allow for motion blur
+                    auto center2 = center + vec3(0, random_double(0, .5), 0);
+                    world.add(make_shared<moving_sphere>(
+                        center, center2, 0.0, 1.0, 0.2, sphere_material));
+                }else if (choose_mat < 0.8){
                     // Diffuse
                     auto albedo = color::random() * color::random();
                     sphere_material = make_shared<lambertain>(albedo);
@@ -65,7 +75,7 @@ hittable_list random_scene(){
     auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
     world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
 
-    return world;
+    return hittable_list(make_shared<bvh_node>(world, 0.0, 1.0));
 }
 
 #endif
