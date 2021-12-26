@@ -10,6 +10,7 @@
  - Camera
    - Orientation
    - Defocus blur (depth of field)
+ - Multithreading
  
 ## Output
 Output is in .ppm format. Right now, to get an output image, run build and run. The exe will output `image.ppm`
