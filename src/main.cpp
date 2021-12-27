@@ -46,9 +46,9 @@ int main(int argc, char const *argv[])
 
     // Image
     const auto aspect_ratio = 16.0 / 9.0;
-    const int image_width = 1280;
+    const int image_width = 400;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
-    const int samples_per_pixel = 500;
+    const int samples_per_pixel = 100;
     const int max_depth = 50;
 
     color* image = new color[image_width * image_width];
@@ -60,8 +60,21 @@ int main(int argc, char const *argv[])
     camera cam;
 
     // World
-    auto world = random_scene(cam, aspect_ratio);
-    //auto world = simple_scene(cam, aspect_ratio);
+    hittable_list world;
+    switch(3){
+        case 0:
+            world = random_scene(cam, aspect_ratio);
+            break;
+        case 1:
+            world = simple_scene(cam, aspect_ratio);
+            break;
+        case 2:
+            world = two_perlin_spheres(cam, aspect_ratio);
+            break;
+        case 3:
+            world = earth(cam, aspect_ratio);
+            break;
+    }
 
     // Render
 

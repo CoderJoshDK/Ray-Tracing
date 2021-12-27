@@ -5,7 +5,7 @@
 
 class camera{
     public:
-        camera() : camera(point3(0), point3(0,0,-1), vec3(0,-1,0), 90, 4.0/3.0, .1, 10){}
+        camera() : camera(point3(0,0,-1), point3(0,0,0), vec3(0,1,0), 40, 1, 0, 10) {}
 
         camera(point3 lookfrom, point3 lookat, vec3 vup, 
                 double vfov, double aspect_ratio,

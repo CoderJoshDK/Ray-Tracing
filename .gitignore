@@ -5,3 +5,4 @@ src/main
 src/image.ppm
 src/main.dSYM
 image.ppm
+*.DS_Store

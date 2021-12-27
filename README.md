@@ -9,10 +9,12 @@
  - Objects:  
    - Sphere
  - Materials:  
-   - Diffuse (lambertain)
+   - Diffuse (lambertian)
    - Metal
    - Dielectrics
    - Textures
+     - Perlin Noise
+     - Image Mapping
  - Camera
    - Orientation
    - Defocus blur (depth of field)
@@ -24,15 +26,16 @@
  
 ## Output
 Output is in .ppm format. Right now, to get an output image, run build. The exe will output `image.ppm`.  
-To change the quality of the image, change `samples_per_pixel` or `image_width`.
-![sampleRender1](Images/sampleRender1.png)  
+To change the quality of the image, change `samples_per_pixel` or `image_width`.  
+
+Output from *random_scene*  
+![sampleRender2](Images/sampleRender2.png)  
 It is intresting to note that glass spheres do not cast shadows. This is physically correct.
 
 
 ### To-Do
- - ***Perlin***
+ - ***Lights***
  - Rectangles
- - Lights
  - Volumes  
 
 ----------
