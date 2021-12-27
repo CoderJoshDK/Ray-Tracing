@@ -12,10 +12,15 @@
    - Diffuse (lambertain)
    - Metal
    - Dielectrics
+   - Textures
  - Camera
    - Orientation
    - Defocus blur (depth of field)
- - Multithreading
+   - Motion Blur
+ - Optimization
+   - Bounding Volume Hierarchy (BVH)
+   - Multithreading
+
  
 ## Output
 Output is in .ppm format. Right now, to get an output image, run build. The exe will output `image.ppm`.  
@@ -25,9 +30,7 @@ It is intresting to note that glass spheres do not cast shadows. This is physica
 
 
 ### To-Do
- - BVH
- - ***Motion Blur***
- - Textures
+ - ***Perlin***
  - Rectangles
  - Lights
  - Volumes  
