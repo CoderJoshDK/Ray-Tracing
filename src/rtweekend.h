@@ -8,9 +8,10 @@
 
 using std::shared_ptr, std::make_shared, std::sqrt;
 
+#define pi 3.1415926535897932385
 
 inline double degrees_to_radians(double degrees){
-    return degrees * M_PI / 180.0;
+    return degrees * pi / 180.0;
 }
 
 // [0, 1)
