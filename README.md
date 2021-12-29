@@ -8,6 +8,7 @@
 ## Impilmented Topics
  - Objects:  
    - Sphere
+   - Rectangles (axis-aligned)
  - Materials:  
    - Diffuse (lambertian)
    - Metal
@@ -15,6 +16,7 @@
    - Textures
      - Perlin Noise
      - Image Mapping
+   - Diffuse Light
  - Camera
    - Orientation
    - Defocus blur (depth of field)

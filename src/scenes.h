@@ -5,8 +5,9 @@
 #include "material.h"
 #include "bvh.h"
 #include "sphere.h"
+#include "aarect.h"
 
-hittable_list simple_scene(camera& cam, double aspect_ratio){
+hittable_list simple_scene(camera& cam, color& background, double aspect_ratio){
     hittable_list world;
 
     auto ground_material = make_shared<lambertian>(color(0.5,0.5,0.5));
@@ -22,6 +23,7 @@ hittable_list simple_scene(camera& cam, double aspect_ratio){
     world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
 
     // Camera
+    background = color(0.70, 0.80, 1.00);
     point3 lookfrom(13,2,3);
     point3 lookat(0,0,0);
     vec3 vup(0,1,0);
@@ -35,7 +37,7 @@ hittable_list simple_scene(camera& cam, double aspect_ratio){
     return world;
 }
 
-hittable_list random_scene(camera& cam, double aspect_ratio){
+hittable_list random_scene(camera& cam, color& background, double aspect_ratio){
     hittable_list world;
 
     //auto ground_material = make_shared<checker_texture>(color(0.1,0.1,0.1), color(0.9, 0.9, 0.9));
@@ -88,6 +90,7 @@ hittable_list random_scene(camera& cam, double aspect_ratio){
     world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
 
     // Camera
+    background = color(0.70, 0.80, 1.00);
     point3 lookfrom(13,2,3);
     point3 lookat(0,0,0);
     vec3 vup(0,1,0);
@@ -101,7 +104,7 @@ hittable_list random_scene(camera& cam, double aspect_ratio){
     return hittable_list(make_shared<bvh_node>(world, 0.0, 1.0));
 }
 
-hittable_list two_perlin_spheres(camera& cam, double aspect_ratio){
+hittable_list two_perlin_spheres(camera& cam, color& background, double aspect_ratio){
     hittable_list objects;
 
     auto groundTexture = make_shared<marble_texture>(2);
@@ -111,6 +114,7 @@ hittable_list two_perlin_spheres(camera& cam, double aspect_ratio){
 
 
     // Camera
+    background = color(0.70, 0.80, 1.00);
     point3 lookfrom(13,2,3);
     point3 lookat(0,0,0);
     vec3 vup(0,1,0);
@@ -124,12 +128,13 @@ hittable_list two_perlin_spheres(camera& cam, double aspect_ratio){
     return objects;
 }
 
-hittable_list earth(camera& cam, double aspect_ratio){
+hittable_list earth(camera& cam, color& background, double aspect_ratio){
     auto earth_texture = make_shared<image_texture>("../Images/earthmap.jpeg");
     auto earth_surface = make_shared<lambertian>(earth_texture);
     auto globe = make_shared<sphere>(point3(0,0,0), 2, earth_surface);
 
     // Camera
+    background = color(0.70, 0.80, 1.00);
     point3 lookfrom(13,2,3);
     point3 lookat(0,0,0);
     vec3 vup(0,1,0);
@@ -141,6 +146,40 @@ hittable_list earth(camera& cam, double aspect_ratio){
     cam = tempCam;
 
     return hittable_list(globe);
+}
+
+hittable_list simple_light(camera& cam, color& background, double aspect_ratio){
+    hittable_list objects;
+
+    auto pertext = make_shared<noise_texture>(4);
+    objects.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(pertext)));
+    objects.add(make_shared<sphere>(point3(0, 2, 0), 2, make_shared<lambertian>(pertext)));
+
+    auto difflight = make_shared<diffuse_light>(color(4,4,4));
+    //objects.add(make_shared<xy_rect>(2, 5, 1, 3, -2, difflight));
+    objects.add(make_shared<sphere>(point3(0, 7, 0), 2, difflight));
+
+    auto blueDiffLight = make_shared<diffuse_light>(color(0,0,8));
+    objects.add(make_shared<moving_sphere>(point3(0, 1.5, 3), point3(0, .5, 3), 0, 1, .5, blueDiffLight));
+    auto redDiffLight = make_shared<diffuse_light>(color(8,0,0));
+    objects.add(make_shared<moving_sphere>(point3(0, 1.5, -3), point3(0, .5, -3), 0, 1, .5, redDiffLight));
+    auto greenDiffLight = make_shared<diffuse_light>(color(0,8,0));
+    objects.add(make_shared<moving_sphere>(point3(-3, 1.5, 0), point3(-3, .5, 0), 0, 1, .5, greenDiffLight));
+
+
+    // Camera
+    background = color(0, 0, 0);
+    point3 lookfrom(26,3,6);
+    point3 lookat(0,2,0);
+    vec3 vup(0,1,0);
+    auto vfov = 20.0;
+    auto dist_to_focus = 10.0;
+    auto aperture = 0.0;
+
+    camera tempCam(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0);
+    cam = tempCam;
+
+    return objects;
 }
 
 #endif

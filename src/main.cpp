@@ -13,24 +13,31 @@
 #include <future>
 #include <fstream>
 
-color ray_color(const ray& r, const hittable& world, int depth){
+color ray_color(const ray& r, const color& background, const hittable& world, int depth){
     hit_record rec;
 
     if (depth <= 0)
         return color(0,0,0);
 
-    if (world.hit(r, 0.001, MAXFLOAT, rec)){
-        ray scattered;
-        color attenuation;
-        if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))
-            return attenuation * ray_color(scattered, world, depth - 1);
-        
-        return color(0,0,0);
-    }
 
+    if (!world.hit(r, 0.001, MAXFLOAT, rec))
+        return background;
+    
+    ray scattered;
+    color attenuation;
+    color emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
+
+    if (!rec.mat_ptr->scatter(r, rec, attenuation, scattered))
+        return emitted;
+        
+    return emitted + attenuation * ray_color(scattered, background, world, depth - 1);
+    
+
+    /*
     vec3 unit_direction = unit_vector(r.direction());
     auto t = .5* (unit_direction.y() + 1.0);
     return (1.0-t)*color(1.0,1.0,1.0) + t*color(.5,.7,1.0);
+    */
 }
 
 
@@ -48,7 +55,7 @@ int main(int argc, char const *argv[])
     const auto aspect_ratio = 16.0 / 9.0;
     const int image_width = 400;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
-    const int samples_per_pixel = 100;
+    const int samples_per_pixel = 10000;
     const int max_depth = 50;
 
     color* image = new color[image_width * image_width];
@@ -61,18 +68,22 @@ int main(int argc, char const *argv[])
 
     // World
     hittable_list world;
-    switch(3){
+    color background(0);
+    switch(4){
         case 0:
-            world = random_scene(cam, aspect_ratio);
+            world = random_scene(cam, background, aspect_ratio);
             break;
         case 1:
-            world = simple_scene(cam, aspect_ratio);
+            world = simple_scene(cam, background, aspect_ratio);
             break;
         case 2:
-            world = two_perlin_spheres(cam, aspect_ratio);
+            world = two_perlin_spheres(cam, background, aspect_ratio);
             break;
         case 3:
-            world = earth(cam, aspect_ratio);
+            world = earth(cam, background, aspect_ratio);
+            break;
+        case 4:
+            world = simple_light(cam, background, aspect_ratio);
             break;
     }
 
@@ -89,14 +100,14 @@ int main(int argc, char const *argv[])
         for (int i = 0; i < image_width; i++){
             // Each pixel will be dealt with by a thread
             auto future = std::async(std::launch::async | std::launch::deferred,
-                [&cam, &world, &samples_per_pixel, i, j, image_width, image_height, &cvResults]() -> RayResult{
-                const unsigned int index = j * image_width + i;
+                [&cam, &world, &samples_per_pixel, &background, i, j, image_width, image_height, &cvResults]() -> RayResult{
+                const unsigned int index = j * image_width + (image_width - i);
                 color pixel_color(0, 0, 0);
                 for (int s = 0; s < samples_per_pixel; s++){
                     auto u = (i + random_double()) / (image_width - 1);
                     auto v = (j + random_double()) / (image_height - 1);
                     ray r = cam.get_ray(u, v);
-                    pixel_color += ray_color(r, world, max_depth);
+                    pixel_color += ray_color(r, background, world, max_depth);
                 }
                 pixel_color /= float(samples_per_pixel);
 
