@@ -6,6 +6,7 @@
 #include "bvh.h"
 #include "sphere.h"
 #include "aarect.h"
+#include "box.h"
 
 hittable_list simple_scene(camera& cam, color& background, double aspect_ratio){
     hittable_list world;
@@ -173,6 +174,42 @@ hittable_list simple_light(camera& cam, color& background, double aspect_ratio){
     point3 lookat(0,2,0);
     vec3 vup(0,1,0);
     auto vfov = 20.0;
+    auto dist_to_focus = 10.0;
+    auto aperture = 0.0;
+
+    camera tempCam(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0);
+    cam = tempCam;
+
+    return objects;
+}
+
+hittable_list cornell_box(camera& cam, color& background, double& aspect_ratio){
+    hittable_list objects;
+
+    auto red = make_shared<lambertian>(color(0.65, 0.05, 0.05));
+    auto white = make_shared<lambertian>(color(0.73, 0.73, 0.73));
+    auto green = make_shared<lambertian>(color(0.12, 0.45, 0.15));
+    auto light = make_shared<diffuse_light>(color(15));
+
+    objects.add(make_shared<yz_rect>(0, 555, 0, 555, 555, green));
+    objects.add(make_shared<yz_rect>(0, 555, 0, 555, 0, red));
+    objects.add(make_shared<xz_rect>(213, 343, 227, 332, 554, light));
+    objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0, white));
+    objects.add(make_shared<xz_rect>(0, 555, 0, 555, 555, white));
+    objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
+
+    objects.add(make_shared<box>(point3(130, 0, 65), point3(295, 165, 239), white));
+    objects.add(make_shared<box>(point3(265, 0, 295), point3(430, 330, 460), white));
+    
+
+
+    // Camera
+    aspect_ratio = 1.0;
+    background = color(0, 0, 0);
+    point3 lookfrom(278,278,-800);
+    point3 lookat(278,278,0);
+    vec3 vup(0,1,0);
+    auto vfov = 40.0;
     auto dist_to_focus = 10.0;
     auto aperture = 0.0;
 

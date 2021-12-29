@@ -8,7 +8,8 @@
 ## Impilmented Topics
  - Objects:  
    - Sphere
-   - Rectangles (axis-aligned)
+   - Box
+     - Rectangles (axis-aligned)
  - Materials:  
    - Diffuse (lambertian)
    - Metal

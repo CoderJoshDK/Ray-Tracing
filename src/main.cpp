@@ -51,25 +51,15 @@ int main(int argc, char const *argv[])
     // Time how long it takes
     auto start = std::chrono::steady_clock::now();
 
-    // Image
-    const auto aspect_ratio = 16.0 / 9.0;
-    const int image_width = 400;
-    const int image_height = static_cast<int>(image_width / aspect_ratio);
-    const int samples_per_pixel = 10000;
-    const int max_depth = 50;
-
-    color* image = new color[image_width * image_width];
-    memset(&image[0], 0, image_width * image_height * sizeof(color));
-    
-    std::ofstream imageFile;
 
     // Camera
     camera cam;
 
     // World
+    auto aspect_ratio = 16.0 / 9.0;
     hittable_list world;
     color background(0);
-    switch(4){
+    switch(5){
         case 0:
             world = random_scene(cam, background, aspect_ratio);
             break;
@@ -85,7 +75,22 @@ int main(int argc, char const *argv[])
         case 4:
             world = simple_light(cam, background, aspect_ratio);
             break;
+        case 5:
+            world = cornell_box(cam, background, aspect_ratio);
+            break;
     }
+
+
+    // Image
+    const int image_width = 400;
+    const int image_height = static_cast<int>(image_width / aspect_ratio);
+    const int samples_per_pixel = 200;
+    const int max_depth = 50;
+
+    color* image = new color[image_width * image_width];
+    memset(&image[0], 0, image_width * image_height * sizeof(color));
+    
+    std::ofstream imageFile;
 
     // Render
 
